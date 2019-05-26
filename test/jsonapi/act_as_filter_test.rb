@@ -86,9 +86,19 @@ class ActAsFilterTest < ActiveSupport::TestCase
         assert_equal [1, 2, 3], sessions.map(&:id).sort
       end
 
+      it 'sesions of course 1,2 use left_outer_joins' do
+        sessions = Session.where_jsonapi_filter( {'course' => '1,2'}, 'left_outer_joins')
+        assert_equal [1, 2, 3], sessions.map(&:id).sort
+      end
+
       # has_one
       it 'session teach by teacher 1, 2, 3' do
         sessions = Session.where_jsonapi_filter instructor: '1,2,3'
+        assert_equal [1, 3, 4], sessions.map(&:id).sort
+      end
+
+      it 'session teach by teacher 1, 2, 3, use left_outer_joins' do
+        sessions = Session.where_jsonapi_filter({'instructor': '1,2,3'}, 'left_outer_joins')
         assert_equal [1, 3, 4], sessions.map(&:id).sort
       end
 
@@ -96,6 +106,11 @@ class ActAsFilterTest < ActiveSupport::TestCase
       it 'course of sessions 1, 2, 3, 8' do
         courses = Course.where_jsonapi_filter(sessions: '1,2,3,8').distinct
         assert_equal [1, 2, 4], courses.map(&:id).sort
+      end
+
+      it 'course of sessions 1, 2, 3, 8, use left_outer_joins' do
+        courses = Course.where_jsonapi_filter({'sessions': '1,2,3,8'}, 'left_outer_joins')
+        assert_equal [1, 1, 2, 4], courses.map(&:id).sort
       end
     end
 
@@ -115,6 +130,11 @@ class ActAsFilterTest < ActiveSupport::TestCase
       # course.amenities (many)
       it 'sessions has amenity a2,a3' do
         sessions = Session.where_jsonapi_filter('course.amenities': '2,3').distinct
+        assert_equal [3], sessions.map(&:id).sort
+      end
+
+      it 'sessions has amenity a2,a3, use left_outer_joins' do
+        sessions = Session.where_jsonapi_filter({'course.amenities': '2,3'}, 'left_outer_joins').distinct
         assert_equal [3], sessions.map(&:id).sort
       end
 

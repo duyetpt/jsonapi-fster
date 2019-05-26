@@ -13,6 +13,7 @@ Model.where_jsonapi_filter params
 
 ## Feature
 * [x] Support filter as filters params follow json-api format.
+* [x] Support left outer joins.
 * [ ] Support sorting.
 
 ## Installation
@@ -51,6 +52,9 @@ Example
 
     # Get all courses of sessions 1,2,3
     Course.where_jsonapi_filter sessions: '1,2,3'
+
+    # User left_outer_joins
+    Course.where_jsonapi_filter sessions: '1,2,3', 'left_outer_joins'
 ```
 
 3. More complex
@@ -58,6 +62,9 @@ Example
     # Get all sessioins in categories G, Y and S.
     # Categories and courses relationship is has_many or has_many through one.
     Session.where_jsonapi_filter 'course.categories.code': 'G,Y,S'
+
+    # User left outer joins
+    Session.where_jsonapi_filter 'course.categories.code': 'G,Y,S', 'left_outer_joins'
 
     # Get all sessions of studio with name is Thanos.
     Session.where_jsonapi_filter 'course.studio.name': 'Thanos'
