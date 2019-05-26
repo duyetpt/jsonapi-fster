@@ -19,3 +19,13 @@ if ActiveSupport::TestCase.respond_to?(:fixture_path=)
   ActiveSupport::TestCase.file_fixture_path = ActiveSupport::TestCase.fixture_path + "/files"
   ActiveSupport::TestCase.fixtures :all
 end
+
+class ActiveSupport::TestCase
+  before do
+    DatabaseCleaner.start
+  end
+
+  after do
+    DatabaseCleaner.clean
+  end
+end

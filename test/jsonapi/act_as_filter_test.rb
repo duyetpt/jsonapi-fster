@@ -1,7 +1,7 @@
 require 'test_helper'
 
 class ActAsFilterTest < ActiveSupport::TestCase
-  setup do
+  before do
     Category.create!([
       {id: 1, name: :gym, code: :G},
       {id: 2, name: :yoga, code: :Y},

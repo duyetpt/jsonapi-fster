@@ -14,7 +14,8 @@ Model.where_jsonapi_filter params
 ## Feature
 * [x] Support filter as filters params follow json-api format.
 * [x] Support left outer joins.
-* [ ] Support sorting.
+* [x] Support sorting.
+* [ ] Support paging.
 
 ## Installation
 Add this line to your application's Gemfile:
@@ -57,7 +58,7 @@ Example
     Course.where_jsonapi_filter sessions: '1,2,3', 'left_outer_joins'
 ```
 
-3. More complex
+3. More complex filter
 ```ruby
     # Get all sessioins in categories G, Y and S.
     # Categories and courses relationship is has_many or has_many through one.
@@ -68,6 +69,18 @@ Example
 
     # Get all sessions of studio with name is Thanos.
     Session.where_jsonapi_filter 'course.studio.name': 'Thanos'
+```
+
+4. Sorting
+```ruby
+    # acs order
+    Session.jsonapi_order('id')
+
+    # desc order
+    Session.jsonapi_order('-id')
+
+    # multiple order
+    Session.jsonapi_order('-id,name,-code')
 ```
 
 ## Contributing
