@@ -1,15 +1,28 @@
 module Jsonapi
   module Fster
     class JoinsClauseBuilder
-      attr_reader :raw_query, :base_class
+      attr_reader :raw_condition, :base_class
+      attr_accessor :condition_items
 
-      def initialize(raw_query, base_class)
-        @raw_query = raw_query
+      def initialize(raw_condition, base_class)
+        @raw_condition = raw_condition
         @base_class = base_class
       end
 
+      def condition_items
+        if @condition_items.blank?
+          if @raw_condition.is_a? Array
+            @condition_items = @raw_condition
+          else
+            @condition_items = @raw_condition.split('.')
+          end
+        end
+
+        @condition_items
+      end
+
       def build_pairs
-        arr = @raw_query.split('.')
+        arr = condition_items
         return [] if arr.is_a? String
 
         (0..(arr.length - 2)).map do |index|
@@ -62,9 +75,10 @@ module Jsonapi
 
       def build!
         # case columns, 1 level relationship and find by id
-        if !@raw_query.include? '.'
-          return @raw_query.to_sym if @base_class.has_relationship? @raw_query
-          raise NoneRelationshipError.new([@base_class.name, @raw_query])
+        if condition_items.size == 1
+          column = condition_items[0]
+          return column.to_sym if @base_class.has_relationship? column
+          raise NoneRelationshipError.new([@base_class.name, column])
         else
           return build_joins_hash_pairs!
         end

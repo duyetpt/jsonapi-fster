@@ -29,25 +29,11 @@ module Jsonapi
         def where_jsonapi_filter params, joins_clause = 'joins'
           query = all
           params.each do |key, value|
-            key = key.to_s
-            value = value.to_s.split(',')
-            if column_names.include? key
-              query = query.where(key => value)
-            else
-              joins_hash = JoinsClauseBuilder.new(key, self).build!
-              query = query.joins(joins_hash)
+            filter_condition = Jsonapi::Fster::FilterCondition.new(self, key, value)
+            query = query.where(filter_condition.where_hash)
 
-              conditions = key.split('.')
-              if joins_hash.is_a?(Symbol) && conditions.size == 1
-                query = query.where(key.pluralize => {id: value})
-              else
-                if conditions[-2].classify.constantize.column_names.include? conditions[-1]
-                  query = query.where(conditions[-2].pluralize => {conditions[-1] => value})
-                else
-                  query = query.where(conditions[-1].pluralize => {id: value})
-                end
-              end
-            end
+            joins_hash = filter_condition.joins_hash
+            query = query.joins(joins_hash) if joins_hash.present?
           end
 
           query

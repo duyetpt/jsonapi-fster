@@ -45,15 +45,15 @@ class ActAsFilterTest < ActiveSupport::TestCase
     ])
 
     Session.create!([
-      {id: 1, course_id: 1, duration: 60, week_day: 1},
-      {id: 2, course_id: 1, duration: 90, week_day: 3},
-      {id: 3, course_id: 2, duration: 60, week_day: 2},
-      {id: 4, course_id: 3, duration: 60, week_day: 2},
-      {id: 5, course_id: 3, duration: 60, week_day: 3},
-      {id: 6, course_id: 4, duration: 45, week_day: 5},
-      {id: 7, course_id: 4, duration: 45, week_day: 6},
-      {id: 8, course_id: 4, duration: 45, week_day: 0},
-      {id: 9, course_id: 5, duration: 90, week_day: 4},
+      {id: 1, course_id: 1, duration: 60, week_day: 1, start_at: Time.zone.local(2019, 1, 1, 10)},
+      {id: 2, course_id: 1, duration: 90, week_day: 3, start_at: Time.zone.local(2019, 1, 1, 15)},
+      {id: 3, course_id: 2, duration: 60, week_day: 2, start_at: Time.zone.local(2019, 1, 3, 10)},
+      {id: 4, course_id: 3, duration: 60, week_day: 2, start_at: Time.zone.local(2019, 1, 2, 15)},
+      {id: 5, course_id: 3, duration: 60, week_day: 3, start_at: Time.zone.local(2019, 1, 2, 18)},
+      {id: 6, course_id: 4, duration: 45, week_day: 5, start_at: Time.zone.local(2019, 1, 10, 10)},
+      {id: 7, course_id: 4, duration: 45, week_day: 6, start_at: Time.zone.local(2019, 1, 15, 10)},
+      {id: 8, course_id: 4, duration: 45, week_day: 0, start_at: Time.zone.local(2019, 2, 1, 10)},
+      {id: 9, course_id: 5, duration: 90, week_day: 4, start_at: Time.zone.local(2019, 2, 10, 10)},
     ])
 
     Instructor.create!([
@@ -169,6 +169,28 @@ class ActAsFilterTest < ActiveSupport::TestCase
         sessions = Session.where_jsonapi_filter('course.amenities.name': 'a1,a2').distinct
         assert_equal [1, 2, 3], sessions.map(&:id).sort
       end
+    end
+
+    it 'session id between 1-5' do
+      result = Session.where_jsonapi_filter('id.between': '1,5').to_a
+      assert_equal 5, result.size
+      assert_equal [1, 2, 3, 4, 5], result.map(&:id).sort
+    end
+
+    it 'session start_at between 10-1 to 20-1' do
+      start_at = Time.zone.local(2019, 1, 10).to_s
+      end_at = Time.zone.local(2019, 1, 20, 23).to_s
+      result = Session.where_jsonapi_filter('start_at.between': "#{start_at},#{end_at}").to_a
+      assert_equal 2, result.size
+      assert_equal [6, 7], result.map(&:id).sort
+    end
+
+    it 'session start_at between 14h 1-1 to 15h 4-1' do
+      start_at = Time.zone.local(2019, 1, 1, 14).to_s
+      end_at = Time.zone.local(2019, 1, 4, 15).to_s
+      result = Session.where_jsonapi_filter('start_at.between': "#{start_at},#{end_at}").to_a
+      assert_equal 4, result.size
+      assert_equal [2, 3, 4, 5], result.map(&:id).sort
     end
   end
 end
