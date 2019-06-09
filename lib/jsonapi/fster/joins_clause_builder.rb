@@ -11,11 +11,7 @@ module Jsonapi
 
       def condition_items
         if @condition_items.blank?
-          if @raw_condition.is_a? Array
-            @condition_items = @raw_condition
-          else
-            @condition_items = @raw_condition.split('.')
-          end
+          @condition_items = @raw_condition.is_a?(Array) ? @raw_condition : @raw_condition.split('.')
         end
 
         @condition_items
@@ -23,11 +19,7 @@ module Jsonapi
 
       def build_pairs
         arr = condition_items
-        return [] if arr.is_a? String
-
-        (0..(arr.length - 2)).map do |index|
-          [arr[index], arr[index + 1]]
-        end
+        (0..(arr.length - 2)).map {|index| [arr[index], arr[index + 1]]}
       end
 
       def build_joins_hash_pair!(pair)
@@ -35,13 +27,11 @@ module Jsonapi
         return if p1_class.column_names.include? pair[1]
 
         joins_hash =
-          if p1_class.belongs_to_relationship?(pair[1]) ||
-            p1_class.has_one_relationship?(pair[1]) ||
-            p1_class.has_many_relationship?(pair[1])
-            { pair[0].to_sym => pair[1].to_sym }
-          elsif p1_class.has_many_through_relationship? pair[1]
-            through_table = p1_class.reflections[pair[1].to_s].options[:through]
-            { pair[0].to_sym => { through_table => pair[1].singularize.to_sym } }
+          if p1_class.has_many_through_relationship? pair[1]
+            through_table = p1_class.reflections[pair[1]].options[:through]
+            {pair[0].to_sym => {through_table => pair[1].singularize.to_sym}}
+          elsif p1_class.has_relationship? pair[1]
+            {pair[0].to_sym => pair[1].to_sym}
           else
             raise NoneRelationshipError.new(pair)
           end
@@ -62,13 +52,8 @@ module Jsonapi
           return @pairs[0][0].to_sym if @base_class.has_relationship? @pairs[0][0]
           raise NoneRelationshipError.new(@pairs[0])
         else
-          length = hash_pairs.length
           hash_pairs.reverse.inject({}) do |hash, item|
-            if hash.blank?
-              hash = item
-            else
-              hash = { item.keys.first => hash }
-            end
+            hash = hash.blank? ? item : {item.keys.first => hash}
           end
         end
       end

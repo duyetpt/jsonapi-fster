@@ -1,5 +1,7 @@
 require 'jsonapi/fster/act_as_filter'
 require 'jsonapi/fster/act_as_sorting'
+require 'jsonapi/fster/act_as_paging'
 require 'jsonapi/fster/joins_clause_builder'
 require 'jsonapi/fster/none_relationship_error'
 require 'jsonapi/fster/filter_condition'
+require 'jsonapi/fster/act_as_fster'

@@ -1,5 +1,5 @@
 # Jsonapi::Fster
-Short description and motivation.
+Support filter, paging, order if params follow jsonapi standard.
 
 ## Usage
 1. In model
@@ -16,7 +16,7 @@ Model.where_jsonapi_filter params
 * [x] Support left outer joins.
 * [x] Support sorting.
 * [x] Support all deep levels.
-* [ ] Support paging.
+* [x] Support paging by will_page.
 * [x] Support filter by range for integer, datetime.
 * [x] Support datetime format.
 
@@ -29,18 +29,23 @@ gem 'jsonapi-fster'
 
 And then execute:
 ```bash
-$ bundle
+$ bundle install
 ```
 
-Or install it yourself as:
+Or install as:
 ```bash
 $ gem install jsonapi-fster
 ```
 
 Example
-1. Simple filter by column
+1. Include fster into model
 ```ruby
-    Session.where_jsonapi_filter name: 'hello'
+    Session.include Jsonapi::Fster::ActAsFster
+```
+
+2. Simple filter by column
+```ruby
+    Session.where_jsonapi name: 'hello'
 ```
 
 2. With relationships
@@ -49,29 +54,29 @@ Example
     Session.belongs_to :course
 
     # Will find all sessions has course with name is `hello`.
-    Session.where_jsonapi_filter 'course.name': 'hello'
+    Session.where_jsonapi 'course.name': 'hello'
 
-    # Will find all sessions of course 1 and course 2
-    Session.where_jsonapi_filter course: '1,2'
+    # Will find all sessions of course 1 and course 2 and paging using will_page
+    Session.where_jsonapi course: '1,2', page: 1, per_page: 10
 
-    # Get all courses of sessions 1,2,3
-    Course.where_jsonapi_filter sessions: '1,2,3'
+    # Get all courses of sessions 1,2,3, sort asc by name
+    Course.where_jsonapi sessions: '1,2,3', sort: 'name'
 
     # User left_outer_joins
-    Course.where_jsonapi_filter sessions: '1,2,3', 'left_outer_joins'
+    Course.where_jsonapi sessions: '1,2,3', 'left_outer_joins'
 ```
 
 3. More complex filter
 ```ruby
     # Get all sessioins in categories G, Y and S.
     # Categories and courses relationship is has_many or has_many through one.
-    Session.where_jsonapi_filter 'course.categories.code': 'G,Y,S'
+    Session.where_jsonapi 'course.categories.code': 'G,Y,S', sort: 'start_at', page: 1, per_page: 20
 
     # User left outer joins
-    Session.where_jsonapi_filter 'course.categories.code': 'G,Y,S', 'left_outer_joins'
+    Session.where_jsonapi 'course.categories.code': 'G,Y,S', 'left_outer_joins'
 
     # Get all sessions of studio with name is Thanos.
-    Session.where_jsonapi_filter 'course.studio.name': 'Thanos'
+    Session.where_jsonapi 'course.studio.name': 'Thanos'
 ```
 
 4. Sorting
@@ -92,7 +97,7 @@ Example
 2. Setup database `rails db:migrate`.
 3. In root folder of project run, run test.
 ```cmd
-bin/test test/jsonapi/act_as_filter_test.rb
+bin/test test/jsonapi/*
 ```
 
 ## License

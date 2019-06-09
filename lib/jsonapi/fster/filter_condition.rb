@@ -20,12 +20,12 @@ module Jsonapi
       end
 
       def condition_items_without_operators
-        @condition_items_without_operators ||
+        @condition_items_without_operators ||=
           condition_items.reject {|item| OPERATORS.include?(item)}
       end
 
       # only support integer and datetime
-      def between_condition?
+      def is_between_operator?
         @condition_items[-1] == BETWEEN_OPERATOR
       end
 
@@ -41,11 +41,11 @@ module Jsonapi
       end
 
       def where_value
-        if between_condition?
-          if value_items[0].is_a? String
-            (value_items[0].to_i..value_items[1].to_i)
-          else
+        if is_between_operator?
+          if value_items[0].is_a? DateTime
             (value_items[0]..value_items[1])
+          else
+            (value_items[0].to_i..value_items[1].to_i)
           end
         else
           value_items
@@ -72,7 +72,7 @@ module Jsonapi
       def joins_hash
         column = condition_items_without_operators[-1]
         if condition_items_without_operators.size == 1 && @base_class.column_names.include?(column)
-          {}
+          nil
         else
           JoinsClauseBuilder.new(condition_items_without_operators, base_class).build!
         end
