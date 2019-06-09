@@ -15,7 +15,10 @@ Model.where_jsonapi_filter params
 * [x] Support filter as filters params follow json-api format.
 * [x] Support left outer joins.
 * [x] Support sorting.
+* [x] Support all deep levels.
 * [ ] Support paging.
+* [ ] Support filter by range
+* [ ] Support datetime format
 
 ## Installation
 Add this line to your application's Gemfile:
