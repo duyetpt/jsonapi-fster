@@ -5,7 +5,7 @@ module Jsonapi
       OPERATORS = [BETWEEN_OPERATOR]
 
       attr_reader :condition, :raw_value, :base_class
-      attr_accessor :condition_items, :value_items, :condition_items_without_operators
+      attr_accessor :condition_items, :value_items, :condition_items_without_operators, :condition_class, :condition_column
 
       # condition is a string a.b.c
       # value is a string a,b,c
@@ -20,8 +20,7 @@ module Jsonapi
       end
 
       def condition_items_without_operators
-        @condition_items_without_operators ||=
-          condition_items.reject {|item| OPERATORS.include?(item)}
+        @condition_items_without_operators ||= condition_items.reject {|item| OPERATORS.include?(item)}
       end
 
       # only support integer and datetime
@@ -31,42 +30,52 @@ module Jsonapi
 
       def value_items
         if @value_items.blank?
-          values = @raw_value.split(',')
+          values =
+            if @raw_value.is_a? String
+              @raw_value.split(',')
+            elsif @raw_value.is_a? Array
+              @raw_value
+            else
+              [@raw_value]
+            end
+
+          type = condition_class.columns_hash[condition_column].type
           @value_items =
-            values.map do |value|
-              value.match(/\d{4}-\d{2}-\d{2}/) ? DateTime.parse(value) : value
+            case type
+            when :integer
+              values.map(&:to_i)
+            when :datetime
+              values.map {|value| DateTime.parse(value)}
+            else
+              values
             end
         end
+
         @value_items
       end
 
       def where_value
-        if is_between_operator?
-          if value_items[0].is_a? DateTime
-            (value_items[0]..value_items[1])
+        is_between_operator? ? (value_items[0]..value_items[1]) : value_items
+      end
+
+      def condition_class
+        column = condition_items_without_operators[-1]
+        @condition_class ||=
+          if condition_items_without_operators.size == 1
+            @base_class.column_names.include?(column) ? @base_class : column.classify.constantize
           else
-            (value_items[0].to_i..value_items[1].to_i)
+            pre_class = condition_items_without_operators[-2].classify.constantize
+            pre_class.column_names.include?(column) ? pre_class : column.classify.constantize
           end
-        else
-          value_items
-        end
+      end
+
+      def condition_column
+        column = condition_items_without_operators[-1]
+        @condition_column ||= column.pluralize == condition_class.table_name ? 'id' : column
       end
 
       def where_hash
-        column = condition_items_without_operators[-1]
-        if condition_items_without_operators.size == 1
-          if @base_class.column_names.include? column
-            {column => where_value}
-          else
-            {column.pluralize => {id: where_value}}
-          end
-        else
-          if condition_items_without_operators[-2].classify.constantize.column_names.include? column
-            {condition_items_without_operators[-2].pluralize => {column => where_value}}
-          else
-            {column.pluralize => {id: where_value}}
-          end
-        end
+        {condition_class.table_name => {condition_column => where_value}}
       end
 
       def joins_hash

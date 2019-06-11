@@ -16,6 +16,26 @@ class ActAsFsterTest < ActiveSupport::TestCase
       assert_equal expect, Session.where_jsonapi(params).to_sql
     end
 
+    it 'filter session by course id, id is integer' do
+      params = {
+        filters: {
+          course_id: 1
+        }
+      }
+      expect = "SELECT \"sessions\".* FROM \"sessions\" WHERE \"sessions\".\"course_id\" = 1"
+      assert_equal expect, Session.where_jsonapi(params).to_sql
+    end
+
+    it 'filter session by course ids, ids is array' do
+      params = {
+        filters: {
+          course_id: [1, 2, 3]
+        }
+      }
+      expect = "SELECT \"sessions\".* FROM \"sessions\" WHERE \"sessions\".\"course_id\" IN (1, 2, 3)"
+      assert_equal expect, Session.where_jsonapi(params).to_sql
+    end
+
     it 'filter and sorting session by start_at desc' do
       params = {
         filters: {
