@@ -47,6 +47,28 @@ class ActAsFsterTest < ActiveSupport::TestCase
       assert_equal expect, Session.where_jsonapi(params).to_sql
     end
 
+    it 'filter and sorting session by courses.code' do
+      params = {
+        filters: {
+          course_id: 1
+        },
+        sort: '-courses.code'
+      }
+      expect = "SELECT \"sessions\".* FROM \"sessions\" INNER JOIN \"courses\" ON \"courses\".\"id\" = \"sessions\".\"course_id\" WHERE \"sessions\".\"course_id\" = 1 ORDER BY courses.code desc"
+      assert_equal expect, Session.where_jsonapi(params).to_sql
+    end
+
+    it 'filter and sorting session by courses.code' do
+      params = {
+        filters: {
+          'course.id': 1
+        },
+        sort: '-courses.code'
+      }
+      expect = "SELECT \"sessions\".* FROM \"sessions\" INNER JOIN \"courses\" ON \"courses\".\"id\" = \"sessions\".\"course_id\" WHERE \"courses\".\"id\" = 1 ORDER BY courses.code desc"
+      assert_equal expect, Session.where_jsonapi(params).to_sql
+    end
+
     describe 'paging' do
       setup do
         # reset default values of will_pages
