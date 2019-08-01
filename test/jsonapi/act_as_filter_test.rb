@@ -192,5 +192,13 @@ class ActAsFilterTest < ActiveSupport::TestCase
       assert_equal 4, result.size
       assert_equal [2, 3, 4, 5], result.map(&:id).sort
     end
+
+    it 'table is not exists' do
+      ex =
+        assert_raise ActiveRecord::StatementInvalid do
+          Session.jsonapi_filter week_days: '3'
+        end
+      assert_equal 'Not exist table week_days', ex.message
+    end
   end
 end

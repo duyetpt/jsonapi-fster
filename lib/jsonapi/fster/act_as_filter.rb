@@ -28,6 +28,7 @@ module Jsonapi
         # version 0.1 only support 2 level. Example: course.course_translations.local = vi, course.name
         def jsonapi_filter params, joins_clause = 'joins'
           query = all
+
           params.each do |key, value|
             filter_condition = Jsonapi::Fster::FilterCondition.new(self, key, value)
             query = query.where(filter_condition.where_hash)

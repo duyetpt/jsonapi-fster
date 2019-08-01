@@ -62,10 +62,15 @@ module Jsonapi
         column = condition_items_without_operators[-1]
         @condition_class ||=
           if condition_items_without_operators.size == 1
-            @base_class.column_names.include?(column) ? @base_class : column.classify.constantize
+            if @base_class.column_names.include?(column)
+              @base_class
+            else
+              look_up_class! column
+            end
           else
-            pre_class = condition_items_without_operators[-2].classify.constantize
-            pre_class.column_names.include?(column) ? pre_class : column.classify.constantize
+            association_name = condition_items_without_operators[-2]
+            pre_class = look_up_class! association_name
+            pre_class.column_names.include?(column) ? pre_class : look_up_class!(column)
           end
       end
 
@@ -75,6 +80,10 @@ module Jsonapi
       end
 
       def where_hash
+        unless condition_class.column_names.include? condition_column
+          raise ActiveRecord::StatementInvalid.new("Column #{condition_column} is not exists on table #{condition_class.table_name}")
+        end
+
         {condition_class.table_name => {condition_column => where_value}}
       end
 
@@ -84,6 +93,17 @@ module Jsonapi
           nil
         else
           JoinsClauseBuilder.new(condition_items_without_operators, base_class).build!
+        end
+      end
+
+      private
+
+      def look_up_class!(column)
+        table_name = column.pluralize
+        if ActiveRecord::Base.connection.tables.include? table_name
+          column.classify.constantize
+        else
+          raise ActiveRecord::StatementInvalid.new("Not exist table #{table_name}")
         end
       end
     end
