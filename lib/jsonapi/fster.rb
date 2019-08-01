@@ -1,3 +1,4 @@
+require 'jsonapi/fster/lookup_class_helper'
 require 'jsonapi/fster/act_as_filter'
 require 'jsonapi/fster/act_as_sorting'
 require 'jsonapi/fster/act_as_paging'

@@ -1,6 +1,8 @@
 module Jsonapi
   module Fster
     class FilterCondition
+      include Jsonapi::Fster::LookupClassHelper
+
       BETWEEN_OPERATOR = 'between'
       OPERATORS = [BETWEEN_OPERATOR]
 
@@ -93,17 +95,6 @@ module Jsonapi
           nil
         else
           JoinsClauseBuilder.new(condition_items_without_operators, base_class).build!
-        end
-      end
-
-      private
-
-      def look_up_class!(column)
-        table_name = column.pluralize
-        if ActiveRecord::Base.connection.tables.include? table_name
-          column.classify.constantize
-        else
-          raise ActiveRecord::StatementInvalid.new("Not exist table #{table_name}")
         end
       end
     end
