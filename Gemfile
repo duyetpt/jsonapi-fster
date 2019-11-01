@@ -14,6 +14,5 @@ gemspec
 # To use a debugger
 gem 'byebug', group: [:development, :test]
 gem 'minitest-spec-rails', group: [:test]
-gem 'database_cleaner', group: [:test]
 gem 'simplecov', require: false, group: :test
 gem 'will_paginate', '~> 3.1.0', group: :test

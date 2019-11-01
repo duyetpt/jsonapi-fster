@@ -14,13 +14,3 @@ Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 
 require "rails/test_unit/reporter"
 Rails::TestUnitReporter.executable = 'bin/test'
-
-class ActiveSupport::TestCase
-  before do
-    DatabaseCleaner.start
-  end
-
-  after do
-    DatabaseCleaner.clean
-  end
-end
