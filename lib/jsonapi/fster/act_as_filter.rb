@@ -31,7 +31,7 @@ module Jsonapi
 
           params.each do |key, value|
             filter_condition = Jsonapi::Fster::FilterCondition.new(self, key, value)
-            query = query.where(filter_condition.where_hash)
+            query = query.where(filter_condition.where_query)
 
             joins_hash = filter_condition.joins_hash
             query = query.public_send(joins_clause, joins_hash) if joins_hash.present?

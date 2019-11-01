@@ -19,6 +19,7 @@ Model.where_jsonapi_filter params
 * [x] Support paging by will_page.
 * [x] Support filter by range for integer, datetime.
 * [x] Support datetime format.
+* [x] Support like query.
 
 ## Installation
 Add this line to your application's Gemfile:
@@ -48,7 +49,7 @@ Example
     Session.where_jsonapi name: 'hello'
 ```
 
-2. With relationships
+3. With relationships
 ```ruby
     Course.has_many :session
     Session.belongs_to :course
@@ -66,7 +67,7 @@ Example
     Course.where_jsonapi sessions: '1,2,3', 'left_outer_joins'
 ```
 
-3. More complex filter
+4. More complex filter
 ```ruby
     # Get all sessioins in categories G, Y and S.
     # Categories and courses relationship is has_many or has_many through one.
@@ -79,7 +80,7 @@ Example
     Session.where_jsonapi 'course.studio.name': 'Thanos'
 ```
 
-4. Sorting
+5. Sorting
 ```ruby
     # acs order
     Session.jsonapi_order('id')
@@ -89,6 +90,12 @@ Example
 
     # multiple order
     Session.jsonapi_order('-id,name,-code')
+```
+
+6. Like query
+```ruby
+    Course.where_jsonapi 'name.lk': '%gym'
+    Course.where_jsonapi 'name.lk': '%yoga%'
 ```
 
 ## Contributing

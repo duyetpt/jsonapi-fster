@@ -200,5 +200,15 @@ class ActAsFilterTest < ActiveSupport::TestCase
         end
       assert_equal 'Not exist table week_days', ex.message
     end
+
+    it 'list courses which name like Mor%' do
+      result = Course.jsonapi_filter('name.lk': 'Mor%')
+      assert_equal 2, result.size
+    end
+
+    it 'list courses which name like Mor%' do
+      result = Course.jsonapi_filter('name.lk': '%o%')
+      assert_equal 5, result.size
+    end
   end
 end

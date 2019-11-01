@@ -4,7 +4,8 @@ module Jsonapi
       include Jsonapi::Fster::LookupClassHelper
 
       BETWEEN_OPERATOR = 'between'
-      OPERATORS = [BETWEEN_OPERATOR]
+      LIKE_OPERATOR = 'lk'
+      OPERATORS = [BETWEEN_OPERATOR, LIKE_OPERATOR]
 
       attr_reader :condition, :raw_value, :base_class
       attr_accessor :condition_items, :value_items, :condition_items_without_operators, :condition_class, :condition_column
@@ -27,7 +28,11 @@ module Jsonapi
 
       # only support integer and datetime
       def is_between_operator?
-        @condition_items[-1] == BETWEEN_OPERATOR
+        condition_items[-1] == BETWEEN_OPERATOR
+      end
+
+      def like_operator?
+        condition_items[-1] == LIKE_OPERATOR
       end
 
       def value_items
@@ -56,7 +61,7 @@ module Jsonapi
         @value_items
       end
 
-      def where_value
+      def condition_value
         is_between_operator? ? (value_items[0]..value_items[1]) : value_items
       end
 
@@ -76,17 +81,18 @@ module Jsonapi
           end
       end
 
-      def condition_column
-        column = condition_items_without_operators[-1]
-        @condition_column ||= column.pluralize == condition_class.table_name ? 'id' : column
+      def condition_table_name
+        condition_class.table_name
       end
 
-      def where_hash
-        unless condition_class.column_names.include? condition_column
-          raise ActiveRecord::StatementInvalid.new("Column #{condition_column} is not exists on table #{condition_class.table_name}")
-        end
+      def condition_column
+        column = condition_items_without_operators[-1]
+        @condition_column ||= column.pluralize == condition_table_name ? 'id' : column
+      end
 
-        {condition_class.table_name => {condition_column => where_value}}
+      # can string || hash
+      def where_query
+        like_operator? ? "#{condition_table_name}.#{condition_column} LIKE '#{condition_value[0]}'" : where_hash
       end
 
       def joins_hash
@@ -96,6 +102,16 @@ module Jsonapi
         else
           JoinsClauseBuilder.new(condition_items_without_operators, base_class).build!
         end
+      end
+
+      private
+
+      def where_hash
+        unless condition_class.column_names.include? condition_column
+          raise ActiveRecord::StatementInvalid.new("Column #{condition_column} is not exists on table #{condition_table_name}")
+        end
+
+        {condition_table_name => {condition_column => condition_value}}
       end
     end
   end
